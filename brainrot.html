@@ -1,0 +1,123 @@
+<html>
+  <head>
+<title>BRAINROT</title>
+<style>
+body {
+  margin-left: 50px;
+}
+span {
+  padding: 5px;
+  cursor: pointer;
+}
+span {
+ color: blue;
+}
+span.selected {
+  background-color: rgb(0,255,0);
+}
+</style>
+<script src="info.js"></script>
+</head>
+<body>
+<script>
+var cur_t = 0;
+var $video = document.createElement("video");
+var $videob = document.createElement("video"); // double-buffer!
+var $vcont = document.createElement("div");
+
+var $sel = undefined;
+
+document.body.appendChild($vcont);
+$vcont.appendChild($video);
+
+var mouseseek = function(ev) {
+    if($video.src) {
+        cur_t = $video.duration * ((ev.clientX - $video.offsetLeft) / $video.clientWidth);
+        $video.currentTime = cur_t;
+    }
+}
+$video.onmousemove = mouseseek;
+$videob.onmousemove = mouseseek;
+// For devices without mice...
+$video.onclick = mouseseek;
+$videob.onclick = mouseseek;
+
+for(var key in INDEX) {
+    var $h2 = document.createElement("h2");
+    $h2.innerHTML = key;
+    document.body.appendChild($h2);
+
+    INDEX[key].forEach(function(uid) {
+        var $span = document.createElement("span");
+        $span.innerHTML = uid.uid;
+        document.body.appendChild($span);
+
+        $span.onmouseover = function() {
+            setsrc($videob, uid.path);
+            var that = this;
+            videoseek($videob, cur_t, function() {
+                // swap videos
+                $vcont.removeChild($video);
+                $vcont.appendChild($videob);
+                var $c = $videob;
+                $videob = $video;
+                $video = $c;
+
+                if($sel) {
+                    $sel.className = "";
+                }
+                $sel = that;
+                $sel.className = "selected";
+            });
+            // $video.currentTime = cur_t;
+        }
+    })
+}
+
+var setsrc = function($v, path) {
+    /* if($v.canPlayType("video/mp4")) {
+        $v.src = path.replace("webm", "mp4").replace("webm", "mp4")
+    }
+    else if($v.canPlayType("video/webm")) {*/
+    $v.src = path;
+
+}
+
+var videoseek = function($v, t, cb) {
+    // from ../numm.js
+    var _seek = function() {
+        $v.removeEventListener("loadedmetadata", _seek, false);
+        $v.currentTime = t;
+        if($v.seeking) {
+            var _callback = function() {
+                $v.removeEventListener("seeked", _callback, false);
+                if(Math.abs($v.currentTime - t) > 0.03) {
+                    // Chrome seems to fire this event a bit early --delay
+                    console.log("delay...", $v.currentTime, t);
+                    if($v === $videob) {
+                        // ...otherwise we've moved on
+                        window.setTimeout(_callback, 10);
+                    }
+                    else {
+                        console.log("irr")
+                    }
+                }
+                else {
+                    console.log("done seeking");
+                    cb();
+                }
+            }
+            $v.addEventListener('seeked', _callback, false); 
+        }
+        else {
+            cb();
+        }
+    };
+    if($v.readyState === 0)
+        $v.addEventListener("loadedmetadata", _seek, false);
+    else
+        _seek();
+};
+</script>
+</body>
+</html>
