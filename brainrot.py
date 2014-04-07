@@ -11,7 +11,7 @@ def decompose_path(p):
     return dict(axis = m.split('_')[-1],
                 imgtyp = m.split('_')[-2],
                 path = p,
-                uid  = m.split('_')[-3])
+                uid  = m.split('_')[0])
 
 out = {}
 for f in files:
