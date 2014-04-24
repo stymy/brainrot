@@ -5,7 +5,8 @@ import sys
 import os
 
 nifti_file = sys.argv[1]
-file_name = nifti_file.split('/')[4]
+file_name = os.path.splitext(os.path.splitext(os.path.basename(nifti_file))[0])[0]
+print file_name
 if not os.path.exists('webm/'):
     os.mkdir("webm/")
 #if not os.path.exists('mp4/'):
