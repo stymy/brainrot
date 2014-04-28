@@ -9,7 +9,6 @@ def decompose_path(p):
     n = os.path.basename(p)
     m = os.path.splitext(n)[0]
     return dict(axis = m.split('_')[-1],
-                imgtyp = m.split('_')[-2],
                 path = p,
                 uid  = m.split('_')[0])
 
